@@ -2,10 +2,9 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from api.api_v1 import router as api_router
+from api import router as api_router
 
-#from api import router as api_router
-from core.db_connection.config import settings
+from money_manage.core.config import settings
 from core.db_connection.db_helper import db_helper
 
 @asynccontextmanager

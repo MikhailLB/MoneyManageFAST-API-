@@ -129,6 +129,7 @@ celerybeat.pid
 
 # Environments
 money_manage/.env
+money_manage/certs
 .venv
 env/
 venv/

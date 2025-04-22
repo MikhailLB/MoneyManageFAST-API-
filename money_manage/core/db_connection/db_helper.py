@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from .config import settings
+from money_manage.core.config import settings
 
 class DatabaseHelper:
     def __init__(self,

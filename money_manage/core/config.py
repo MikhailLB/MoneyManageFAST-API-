@@ -29,6 +29,14 @@ class DataBaseConfig(BaseSettings):
         "pk": "pk_%(table_name)s"
     }
 
+class AuthJWT(BaseModel):
+    private_key: Path = BASE_DIR / 'certs' / 'private.pem'
+    public_key: Path = BASE_DIR / 'certs' / 'public.pem'
+    algorithm: str = 'RS256'
+    expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -39,6 +47,6 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     db: DataBaseConfig
-    #auth_jwt: AuthJWT = AuthJWT()
+    auth_jwt: AuthJWT = AuthJWT()
 
 settings = Settings()
