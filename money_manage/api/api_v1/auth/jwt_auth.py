@@ -15,7 +15,8 @@ from core.models.user import User
 from core.schemas.user import UserOut, UserIn, UserForm
 from crud.user import get_user, add_user_in_db
 
-router = APIRouter()
+router = APIRouter(prefix="/auth",
+    tags=["auth"],)
 
 async def authenticate_user(password: str, session: AsyncSession, username: str | None = None):
     user = await get_user(username=username, session=session)
@@ -51,6 +52,9 @@ async def get_current_user(
 
 @router.post("/login")
 async def login(username: str = Form(), password: str = Form(), session: AsyncSession = Depends(db_helper.session_getter)):
+    """
+            Login user
+    """
     user = await authenticate_user(username=username, password=password, session=session)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username/email or password")
@@ -67,6 +71,9 @@ async def refresh_token(
     refresh_token: str = Cookie(default=None, alias="refresh_token"),
     session: AsyncSession = Depends(db_helper.session_getter)
 ):
+    """
+            Get refresh token
+    """
     if refresh_token is None:
         raise HTTPException(status_code=401, detail="No refresh token provided")
 
@@ -99,7 +106,11 @@ async def refresh_token(
 async def protected_route(current_user: User = Depends(get_current_user)):
     return {"message": f"Hello, {current_user.username}"}
 
-@router.post("/add_user", response_model=UserOut)
+@router.post("/register", response_model=UserOut)
 async def add_user(user: UserForm, session: AsyncSession = Depends(db_helper.session_getter)):
     user = await add_user_in_db(username=user.username, password=user.password, email=user.email, session=session)
     return user
+
+@router.get("/check")
+async def check():
+    return {"message": f"Hello, it not working"}
