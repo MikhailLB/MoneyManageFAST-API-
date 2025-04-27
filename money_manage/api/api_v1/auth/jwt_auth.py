@@ -1,18 +1,14 @@
-from typing import Annotated
-
 import jwt
-from fastapi import Cookie, HTTPException, APIRouter
+from fastapi import Cookie, HTTPException, APIRouter, Request, Depends
 from fastapi.params import Depends, Form
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.functions import session_user
 from starlette.responses import JSONResponse
 
 from api.api_v1.auth.helpers import create_access_token, create_refresh_token
 from api.api_v1.auth.utils import validate_password, decode_jwt
 from core.db_connection.db_helper import db_helper
 from core.models.user import User
-from core.schemas.user import UserOut, UserIn, UserForm
+from core.schemas.user import UserOut, UserForm
 from crud.user import get_user, add_user_in_db
 
 router = APIRouter(prefix="/auth",
@@ -111,6 +107,13 @@ async def add_user(user: UserForm, session: AsyncSession = Depends(db_helper.ses
     user = await add_user_in_db(username=user.username, password=user.password, email=user.email, session=session)
     return user
 
-@router.get("/check")
-async def check():
-    return {"message": f"Hello, it not working"}
+
+async def get_current_user_id(request: Request) -> str:
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+    user_id = user.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+
+    return user_id

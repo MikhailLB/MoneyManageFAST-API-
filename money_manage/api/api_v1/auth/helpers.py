@@ -12,7 +12,7 @@ ACCESS_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TYPE = "refresh"
 
 def create_jwt(token_type: str, token_data: dict,
-               expire_minutes: int =settings.auth_jwt.expire_minutes,
+               expire_minutes: int = settings.auth_jwt.expire_minutes,
                expire_timedelta: timedelta | None = None,) -> str:
     jwt_payload = {TOKEN_TYPE_FIELD: token_type,}
     jwt_payload.update(token_data)
@@ -30,4 +30,4 @@ def create_refresh_token(user) -> str:
         "sub": str(user.id),
         "username": user.username,
     }
-    return create_jwt(token_type=REFRESH_TOKEN_TYPE,token_data=jwt_payload, expire_minutes=settings.auth_jwt.expire_minutes,)
+    return create_jwt(token_type=REFRESH_TOKEN_TYPE,token_data=jwt_payload, expire_minutes=settings.auth_jwt.refresh_token_expire_minutes,)

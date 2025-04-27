@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from money_manage.core.config import settings
@@ -24,10 +26,14 @@ class DatabaseHelper:
     async def dispose(self):
         await self.engine.dispose()
 
-    async def session_getter(self):
+    @asynccontextmanager
+    async def session_getter_md(self):
         async with self.session_factory() as session:
             yield session
 
+    async def session_getter(self):
+        async with self.session_factory() as session:
+            yield session
 
 db_helper = DatabaseHelper(
     url=str(settings.db.url),

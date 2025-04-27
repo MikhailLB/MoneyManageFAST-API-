@@ -33,8 +33,8 @@ class AuthJWT(BaseModel):
     private_key: Path = BASE_DIR / 'certs' / 'private.pem'
     public_key: Path = BASE_DIR / 'certs' / 'public.pem'
     algorithm: str = 'RS256'
-    expire_minutes: int = 15
-    refresh_token_expire_days: int = 7
+    expire_minutes: int = 1
+    refresh_token_expire_minutes: int = 15000
 
 
 class Settings(BaseSettings):

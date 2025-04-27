@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, DateTime
 
 from core.db_connection.database import Base
@@ -23,3 +23,5 @@ class User(Base):
     )
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     last_name: Mapped[str] = mapped_column(String(50), nullable=True)
+
+    transactions: Mapped[list['Transactions']] = relationship(back_populates="user",cascade="all, delete-orphan")
