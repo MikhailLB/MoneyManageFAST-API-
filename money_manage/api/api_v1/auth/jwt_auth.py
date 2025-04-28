@@ -7,6 +7,7 @@ from starlette.responses import JSONResponse
 from api.api_v1.auth.helpers import create_access_token, create_refresh_token
 from api.api_v1.auth.utils import validate_password, decode_jwt
 from core.db_connection.db_helper import db_helper
+from core.exceptions import TokenExpiredException, TokenInvalidException
 from core.models.user import User
 from core.schemas.user import UserOut, UserForm
 from crud.user import get_user, add_user_in_db
@@ -62,41 +63,28 @@ async def login(username: str = Form(), password: str = Form(), session: AsyncSe
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
     return response
 
-@router.post("/refresh")
-async def refresh_token(
-    refresh_token: str = Cookie(default=None, alias="refresh_token"),
-    session: AsyncSession = Depends(db_helper.session_getter)
-):
-    """
-            Get refresh token
-    """
+async def refresh_token(refresh_token: str, session: AsyncSession):
     if refresh_token is None:
-        raise HTTPException(status_code=401, detail="No refresh token provided")
-
+        raise TokenExpiredException("Refresh token is missing")
     try:
         payload = decode_jwt(refresh_token)
         username = payload.get("username")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-        user = await get_user(username=username, session=session)  # await обязательно
+        if username is None:
+            raise TokenInvalidException("Invalid refresh token")
+
+        user = await get_user(username=username, session=session)
         if not user:
-            raise HTTPException(status_code=401, detail="User not found")
+            raise TokenInvalidException("User not found")
 
         access_token = create_access_token(user)
-        response = JSONResponse(content={"message": "Token refreshed"})
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            secure=True
-        )
-        return response
+
+        return access_token
 
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Refresh token has expired")
+        raise TokenExpiredException("Refresh token has expired")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        raise TokenInvalidException("Invalid refresh token")
 
 @router.get("/protected")
 async def protected_route(current_user: User = Depends(get_current_user)):
@@ -108,7 +96,8 @@ async def add_user(user: UserForm, session: AsyncSession = Depends(db_helper.ses
     return user
 
 
-async def get_current_user_id(request: Request) -> str:
+async def get_current_user_id(request: Request) -> int:
+
     user = getattr(request.state, "user", None)
     if not user:
         raise HTTPException(status_code=401, detail="User not authenticated")
@@ -116,4 +105,4 @@ async def get_current_user_id(request: Request) -> str:
     if not user_id:
         raise HTTPException(status_code=401, detail="User ID not found in token")
 
-    return user_id
+    return int(user_id)

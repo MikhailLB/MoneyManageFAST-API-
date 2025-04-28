@@ -1,3 +1,4 @@
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models.transactions import Transactions
@@ -14,6 +15,16 @@ async def add_transaction_in_db(session: AsyncSession, transaction: TransactionI
         await session.refresh(transaction)
 
         return transaction
+
+    except Exception as e:
+        raise e
+
+async def get_transaction_by_id(session: AsyncSession, transaction_id: int, user_id: str) -> Transactions:
+    try:
+        query = select(Transactions).filter(and_(Transactions.id == transaction_id, Transactions.user_id == user_id))
+        transaction = await session.execute(query)
+        result = transaction.scalar_one_or_none()
+        return result
 
     except Exception as e:
         raise e

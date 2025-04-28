@@ -26,5 +26,6 @@ async def add_user_in_db(session: AsyncSession, username: str, password: str, em
         await session.commit()
         await session.refresh(new_user)
         return new_user
+
     except Exception as e:
         raise e
