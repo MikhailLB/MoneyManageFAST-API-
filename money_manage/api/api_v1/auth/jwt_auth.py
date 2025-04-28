@@ -36,7 +36,7 @@ async def get_current_user(
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        user = await get_user(username=username, session=session)  # нужно ждать!
+        user = await get_user(username=username, session=session)
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
         return user
