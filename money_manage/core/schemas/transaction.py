@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import List
 
 from pydantic import BaseModel
 
@@ -20,3 +21,16 @@ class TransactionOut(TransactionBase):
     date: date
     created_at: datetime
     updated_at: datetime
+
+class TransactionListResponse(BaseModel):
+    total: int
+    items: List[TransactionOut]
+
+
+class TransactionUpdate(BaseModel):
+    user_id: int | None = None
+    category_id: int | None = None
+    description: str | None = None
+    amount: float | None = None
+    transaction_type_id: int | None = None
+    currency_id: int | None = None
